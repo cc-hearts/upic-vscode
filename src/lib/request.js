@@ -4,7 +4,7 @@
  * @Date 2022-11-03
  */
 import axios from "axios";
-import { Shard } from "./index.js";
+import { Shard, Sql } from "./index.js";
 import Logger from "./log.js";
 function formatMethod(method) {
   // TODO: 后续转大写
@@ -25,7 +25,7 @@ function formatMethod(method) {
 }
 function request(url, method, params = {}, headers = {}) {
   method = formatMethod(method);
-  axios({
+  return axios({
     url,
     method: method || "get",
     params: params,
