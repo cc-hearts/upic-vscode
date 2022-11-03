@@ -1,7 +1,7 @@
 {
   "name": "interval-engine",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "a simple automated process http",
   "type": "module",
   "main": "index.js",
   "scripts": {
