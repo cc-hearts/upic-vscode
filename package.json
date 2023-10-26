@@ -9,15 +9,16 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "upic-vscode.helloWorld",
-        "title": "Hello World"
-      }
-    ]
+    "keybindings": {
+      "command": "upic-vscode.pasteCommand",
+      "key": "ctrl+v",
+      "mac": "cmd+v"
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
