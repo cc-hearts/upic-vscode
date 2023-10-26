@@ -55,13 +55,13 @@ export function activate(context: vscode.ExtensionContext) {
 				const reg = /\!\[(.*)\]\((.*)\)/g;
 				const match = lineText.match(reg);
 				match?.forEach(item => {
-					const r = /\!\[(.*)\]\((.*)\)/;
-					const m = item.match(r);
-					if (m) {
+					const reg = /\!\[(.*)\]\((.*)\)/;
+					const matcher = item.match(reg);
+					if (matcher) {
 						replaceImage.push({
-							originStr: m[0],
-							name: m[1],
-							imageName: m[2]
+							originStr: matcher[0],
+							name: matcher[1],
+							imageName: matcher[2]
 						});
 					}
 				});
