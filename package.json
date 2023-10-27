@@ -6,6 +6,7 @@
   "engines": {
     "vscode": "^1.83.0"
   },
+  "publisher": "cc-heart",
   "license": "MIT",
   "categories": [
     "Other"
