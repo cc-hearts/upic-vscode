@@ -6,6 +6,10 @@
   "engines": {
     "vscode": "^1.83.0"
   },
+  "repository": {
+    "type": "git",
+    "directory": "git+https://github.com/cc-hearts/upic-vscode.git"
+  },
   "publisher": "cc-heart",
   "license": "MIT",
   "categories": [

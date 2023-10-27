@@ -1,8 +1,8 @@
-import * as vscode from 'vscode';
-import { basename, resolve, extname } from 'path';
 import { execSync } from 'child_process';
 import { createReadStream, createWriteStream } from 'fs';
-import { mkdir, rm, access, constants, rename } from 'fs/promises';
+import { access, constants, mkdir, rename, rm } from 'fs/promises';
+import { basename, dirname, extname, resolve } from 'path';
+import * as vscode from 'vscode';
 
 interface ImageMeta {
 	originStr: string
@@ -10,35 +10,36 @@ interface ImageMeta {
 	imageName: string
 }
 
-async function uploadWithUPic(imageList: Array<ImageMeta>) {
-	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.path;
-	if (rootPath) {
-		const res = imageList.map(async (item) => {
-			const _path = resolve(rootPath, item.imageName);
-			const reFilename = resolve(rootPath, renameImage(item.imageName));
-			try {
-				await rename(_path, reFilename);
-			} catch (e) {
-				console.log('rename error: ', e);
-			}
-			const data = execSync(`/Applications/uPic.app/Contents/MacOS/uPic -u ${reFilename} -s`);
-			console.log('command: ', `/Applications/uPic.app/Contents/MacOS/uPic -u ${reFilename} -s`);
-			const reg = /http.*$/gm;
-			const uploadPathList = data.toString().match(reg);
-			console.log('data.toString(): ', data.toString());
-			if (uploadPathList) {
-				const [uploadPath] = uploadPathList;
-				moveFile(resolve(rootPath, reFilename));
-				return {
-					originStr: item.originStr,
-					newStr: item.originStr.replace(/\(.*\)/, `(${uploadPath})`)
-				};
-			}
-			return null;
-		});
-		return Promise.all(res);
-	}
-	return [];
+async function uploadWithUPic(imageList: Array<ImageMeta>, fileDirectory: string) {
+	const res = imageList.map(async (item) => {
+		const filepath = resolve(fileDirectory, item.imageName);
+		const renameFilepath = resolve(fileDirectory, renameImage(item.imageName));
+		try {
+			await rename(filepath, renameFilepath);
+		} catch (e) {
+			console.log('rename error: ', e);
+		}
+
+		const data = execSync(`/Applications/uPic.app/Contents/MacOS/uPic -u ${renameFilepath} -s`);
+		console.log('command: ', `/Applications/uPic.app/Contents/MacOS/uPic -u ${renameFilepath} -s`);
+
+		const reg = /http.*$/gm;
+		const resultStr = data.toString();
+		console.log('oss upload result: ', resultStr);
+
+		const uploadPathList = resultStr.match(reg);
+		if (uploadPathList) {
+			const [uploadPath] = uploadPathList;
+			moveFile(renameFilepath);
+			return {
+				originStr: item.originStr,
+				newStr: item.originStr.replace(/\(.*\)/, `(${uploadPath})`)
+			};
+		}
+		return null;
+	});
+
+	return Promise.all(res);
 }
 
 function textReplace(text: string, imageList: Array<{ originStr: string, newStr: string }>) {
@@ -50,9 +51,10 @@ function textReplace(text: string, imageList: Array<{ originStr: string, newStr:
 
 async function moveFile(filepath: string) {
 	const MOVE_DIR_NAME = '.upic-vscode';
-	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.path;
+
 	const filename = basename(filepath);
 
+	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.path;
 	if (rootPath) {
 		const dirPath = resolve(rootPath, MOVE_DIR_NAME);
 
@@ -68,7 +70,9 @@ async function moveFile(filepath: string) {
 				await access(originFilename, constants.F_OK);
 				originFilename = resolve(dirPath, renameImage(originFilename));
 			};
-		} catch (e) { }
+		} catch (e) {
+			console.log('orginFilename is not exist: ', originFilename);
+		}
 
 		try {
 			await access(filepath, constants.F_OK);
@@ -78,7 +82,7 @@ async function moveFile(filepath: string) {
 				rm(filepath, { force: true });
 			});
 		} catch (e) {
-			console.log('e', e);
+			console.log('[moveFile] image filepath is not exist:', e);
 		}
 	}
 }
@@ -93,10 +97,8 @@ export function activate(context: vscode.ExtensionContext) {
 		// 执行vscode原本的粘贴操作
 		await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
 		const text = await vscode.env.clipboard.readText();
-		// 获取粘贴后的选择区域信息
-		if (text) {
-			return;
-		}
+		if (text) { return; }
+
 		setTimeout(async () => {
 			const editor = vscode.window.activeTextEditor;
 
@@ -104,6 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const selection = editor.selection;
 				const lineNumber = selection.active.line;
 				const lineText = editor.document.lineAt(lineNumber).text;
+				const fileDirectory = dirname(editor.document.uri.path);
 				const replaceImage = [] as Array<ImageMeta>;
 				const reg = /\!\[(.*)\]\((.*)\)/g;
 				const match = lineText.match(reg);
@@ -116,10 +119,10 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				});
 
-				const list = await uploadWithUPic(replaceImage);
-				console.log('output list: ', list);
-				if (Array.isArray(list) && list.length > 0) {
-					const _data = list.filter(data => !!data) as Array<{ originStr: string, newStr: string }>;
+				const imageToken = await uploadWithUPic(replaceImage, fileDirectory);
+				console.log('image Token: ', imageToken);
+				if (Array.isArray(imageToken) && imageToken.length > 0) {
+					const _data = imageToken.filter(data => !!data) as Array<{ originStr: string, newStr: string }>;
 					const text = textReplace(lineText, _data);
 					const range = editor.document.lineAt(lineNumber).range;
 					editor.edit(editBuilder => {
