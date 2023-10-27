@@ -2,7 +2,7 @@
   "name": "upic-vscode",
   "displayName": "upic-vscode",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.83.0"
   },
