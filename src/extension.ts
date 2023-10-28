@@ -31,9 +31,12 @@ async function uploadWithUPic(imageList: Array<ImageMeta>, fileDirectory: string
 		if (uploadPathList) {
 			const [uploadPath] = uploadPathList;
 			moveFile(renameFilepath);
+			const attrName = basename(uploadPath);
 			return {
 				originStr: item.originStr,
-				newStr: item.originStr.replace(/\(.*\)/, `(${uploadPath})`)
+				newStr: item.originStr
+					.replace(/\[.*\]/, `[${attrName}]`)
+					.replace(/\(.*\)/, `(${uploadPath})`)
 			};
 		}
 		return null;
