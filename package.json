@@ -2,7 +2,7 @@
   "name": "upic-vscode",
   "displayName": "upic-vscode",
   "description": "",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "engines": {
     "vscode": "^1.83.0"
   },
@@ -23,7 +23,8 @@
     "keybindings": {
       "command": "upic-vscode.pasteCommand",
       "key": "ctrl+v",
-      "mac": "cmd+v"
+      "mac": "cmd+v",
+      "when": "resourceExtname == .md"
     }
   },
   "scripts": {
@@ -35,7 +36,8 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "changelog": "npx conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",

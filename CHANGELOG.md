@@ -1,3 +1,9 @@
+# [0.2.0](https://github.com/cc-hearts/upic-vscode/compare/v0.1.0...v0.2.0) (2023-10-28)
+
+### Features
+
+- Change image alt ([8b0198e](https://github.com/cc-hearts/upic-vscode/commit/8b0198eae18ea861741e1f2ed5f3ba0c3275f183))
+
 # [0.1.0](https://github.com/cc-hearts/upic-vscode/compare/9ce3e5ec7567037246992cd8ee77b856422c6737...v0.1.0) (2023-10-27)
 
 ### Bug Fixes
